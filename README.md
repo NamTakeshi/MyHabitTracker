@@ -1,6 +1,6 @@
 # webtech_project_nam_alviana
 
-Team-Mitglieder: Nam & Alviana
+Team-Mitglieder: Phan Cong Nhat Nam & Alviana Alviana
 
 Projekt-Beschreibung:
 Der HabitTracker ist eine Webanwendung, mit der Nutzer ihre Gewohnheiten (Habits) erfassen, verwalten und ihren Fortschritt verfolgen können.
