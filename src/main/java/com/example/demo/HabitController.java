@@ -13,6 +13,7 @@ public class HabitController {
     public List<Habit> getHabits() {
         return List.of(
                 new Habit(1L, "Joggen"),
+
                 new Habit(2L, "8 Stunden Schlaf")
         );
     }
