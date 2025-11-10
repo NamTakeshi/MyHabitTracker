@@ -1,11 +1,13 @@
 package com.example.demo;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "https://myhabittracker-frontend.onrender.com")
 public class HabitController {
 
     // GET-Route für /habits → gibt alle Habits als JSON-Liste (JavaScript Object Notation Format) zurück
