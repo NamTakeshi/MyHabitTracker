@@ -1,10 +1,16 @@
 package com.example.demo;
 
 
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "habits")
 public class Habit {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private boolean completed;
@@ -12,6 +18,7 @@ public class Habit {
     private LocalDate lastCompletedDate;
 
     // constructor
+    public Habit() {}
     public Habit(Long id, String name) {
         this.id = id;
         this.name = name;
