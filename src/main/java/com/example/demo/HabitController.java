@@ -18,8 +18,10 @@ Damit dein Frontend sie anzeigen kann.
 */
 @RequestMapping("/habits")
 @RestController
-@CrossOrigin(origins = "https://myhabittracker-frontend.onrender.com")
-public class HabitController {
+@CrossOrigin(origins = {
+        "https://myhabittracker-frontend.onrender.com", // Render frontend
+        "http://localhost:5173/"                        // Local frontend
+})public class HabitController {
 
     private final HabitService service;
 
