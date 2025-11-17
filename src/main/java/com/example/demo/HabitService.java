@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 // Frontend → Controller → Service → Repository → Datenbank
 // Der Service ist das Gehirn zwischen Controller und Repository.
+
 @Service
 public class HabitService {
 

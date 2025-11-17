@@ -16,7 +16,7 @@ POST /habits → speichert neuen Habit mit repo.save()
 3. Gibt Antworten im JSON-Format zurück
 Damit dein Frontend sie anzeigen kann.
 */
-
+@RequestMapping("/habits")
 @RestController
 @CrossOrigin(origins = "https://myhabittracker-frontend.onrender.com")
 public class HabitController {
@@ -27,14 +27,9 @@ public class HabitController {
         this.service = service;
     }
 
-    // GET-Route für /habits → gibt alle Habits als JSON-Liste (JavaScript Object Notation Format) zurück
-    @GetMapping("/habits") // Liefert Daten an das Frontend
-    public List<Habit> getHabits() {
-        return List.of(
-                new Habit(1L, "Joggen"),
-
-                new Habit(2L, "8 Stunden Schlaf")
-        );
+    @GetMapping
+    public Iterable<Habit> getHabits() {
+        return service.getAll(); // <- jetzt aus DB
     }
 
     @PostMapping // Nimmt Daten vom Frontend an
