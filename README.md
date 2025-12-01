@@ -16,3 +16,8 @@ Use-Cases:
 - Tagesreset durchführen 
 - Streak zählen und anzeigen
 - Tages-Fortschritt im Kalender anzeigen  (Bonus-Use Case)
+
+Front-End Remote: https://myhabittracker-frontend.onrender.com
+Front-End Local: http://localhost:5173
+Back-End Remote: https://myhabittracker.onrender.com/habits
+Back-End Local: http://localhost:8080/habits
