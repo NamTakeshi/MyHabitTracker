@@ -1,5 +1,9 @@
 package com.example.demo;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +33,8 @@ Damit dein Frontend sie anzeigen kann.
         this.service = service;
     }
 
+
+
     @GetMapping
     public Iterable<Habit> getHabits() {
         return service.getAll(); // <- jetzt aus DB
@@ -56,11 +62,25 @@ Damit dein Frontend sie anzeigen kann.
         return service.checkHabit(id);
     }
 
+    // Tägliches Reset
+    @PostMapping("/reset-today")
+    public void resetToday() {
+        service.resetAllHabitsForNewDay();
+    }
+
+
     // Habits filtern
     @GetMapping("/filter")
     public Iterable<Habit> filterHabits(@RequestParam String status) {
         return service.filterByStatus(status); // z.B. "all", "active", "completed"
     }
+
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Habit> completeHabit(@PathVariable Long id, @RequestParam boolean completed) {
+        Habit habit = service.completeHabit(id, completed);
+        return ResponseEntity.ok(habit);
+    }
+
 
 
 

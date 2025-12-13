@@ -2,6 +2,9 @@ package com.example.demo;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 // Frontend → Controller → Service → Repository → Datenbank
 // Der Service ist das Gehirn zwischen Controller und Repository.
 
@@ -29,8 +32,28 @@ public class HabitService {
     public Habit updateHabit(Long id, Habit updated) {
         Habit existing = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
+
+        LocalDate today = LocalDate.now();
+
+        if (updated.isCompleted()) {
+            // Erledigt → Streak erhöhen
+            if (existing.getLastCompletedDate() == null ||
+                    !existing.getLastCompletedDate().equals(today)) {
+                existing.setStreakCount(existing.getStreakCount() + 1);
+            }
+            existing.setLastCompletedDate(today);
+        } else {
+            // Rückgängig → Streak für heute zurücksetzen
+            if (existing.getLastCompletedDate() != null &&
+                    existing.getLastCompletedDate().equals(today)) {
+                existing.setStreakCount(Math.max(0, existing.getStreakCount() - 1));
+                existing.setLastCompletedDate(null);
+            }
+        }
+
         existing.setName(updated.getName());
-        // weitere Felder bei Bedarf
+        existing.setCompleted(updated.isCompleted());
+
         return repo.save(existing);
     }
 
@@ -53,6 +76,35 @@ public class HabitService {
         }
         return repo.findAll();
     }
+
+    // Manuelles Resetting (Wird von Cron Job eigentlich automatisch übernommen)
+    public void resetAllHabitsForNewDay() {
+        Iterable<Habit> habits = repo.findAll();
+        habits.forEach(Habit::resetForNewDay);
+        repo.saveAll(habits);
+    }
+
+    public Habit completeHabit(Long id, boolean completed) {
+        Habit habit = repo.findById(id).orElseThrow();
+        LocalDate today = LocalDate.now();
+
+        if (completed) {
+            // Cron hat gestern gecheckt → immer +1!
+            habit.setStreakCount(habit.getStreakCount() + 1);
+            habit.setLastCompletedDate(today);
+            habit.setCompleted(true);
+        } else {
+            // Offen → Reset (sofort!)
+            habit.setStreakCount(0);
+            habit.setLastCompletedDate(null);
+            habit.setCompleted(false);
+        }
+
+        return repo.save(habit);
+    }
+
+
+
 
 }
 
