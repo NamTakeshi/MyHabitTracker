@@ -39,6 +39,33 @@ Damit dein Frontend sie anzeigen kann.
         return service.addHabit(h);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteHabit(@PathVariable Long id) {
+        service.deleteHabit(id);
+    }
+
+    // Habit bearbeiten
+    @PutMapping("/{id}")
+    public Habit updateHabit(@PathVariable Long id, @RequestBody Habit h) {
+        return service.updateHabit(id, h);
+    }
+
+    // Als erledigt markieren
+    @PostMapping("/{id}/check")
+    public Habit checkHabit(@PathVariable Long id) {
+        return service.checkHabit(id);
+    }
+
+    // Habits filtern
+    @GetMapping("/filter")
+    public Iterable<Habit> filterHabits(@RequestParam String status) {
+        return service.filterByStatus(status); // z.B. "all", "active", "completed"
+    }
+
+
+
+
+
 
 
 }

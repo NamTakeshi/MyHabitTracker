@@ -8,4 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HabitRepository extends CrudRepository<Habit, Long> {
 
+    Iterable<Habit> findByCompletedTrue();
+    Iterable<Habit> findByCompletedFalse();
+
 }
