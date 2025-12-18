@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ Damit dein Frontend sie anzeigen kann.
 @CrossOrigin(origins = {
         "https://myhabittracker-frontend.onrender.com", // Render frontend
         "http://localhost:5173/"                        // Local frontend
-})public class HabitController {
+}) public class HabitController {
 
     private final HabitService service;
 
@@ -38,6 +39,14 @@ Damit dein Frontend sie anzeigen kann.
     @GetMapping
     public Iterable<Habit> getHabits() {
         return service.getAll(); // <- jetzt aus DB
+    }
+
+    // 🔥 HEATMAP ENDPOINT
+    @GetMapping("/{id}/completions")
+    public List<HabitCompletion> getCompletions(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "90") int daysBack) {
+        return service.getCompletions(id, daysBack);
     }
 
     @PostMapping // Nimmt Daten vom Frontend an
@@ -76,10 +85,14 @@ Damit dein Frontend sie anzeigen kann.
     }
 
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Habit> completeHabit(@PathVariable Long id, @RequestParam boolean completed) {
-        Habit habit = service.completeHabit(id, completed);
+    public ResponseEntity<Habit> completeHabit(
+            @PathVariable Long id,
+            @RequestParam boolean completed,
+            @RequestParam(required = false) String date) {
+        Habit habit = service.completeHabit(id, completed, date);
         return ResponseEntity.ok(habit);
     }
+
 
 
 

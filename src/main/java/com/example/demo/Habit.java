@@ -4,10 +4,15 @@ package com.example.demo;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "habits")
 public class Habit {
+
+    @OneToMany(mappedBy = "habit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HabitCompletion> completions = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +21,16 @@ public class Habit {
     private boolean completed;
     private int streakCount;
     private LocalDate lastCompletedDate;
+
+    private String category;
+    private Integer targetAmount;
+    private String targetUnit;
+
+    private String frequency;
+
+    private String notes;
+    private String color;
+    private String icon;
 
     // constructor
     public Habit() {}
@@ -69,7 +84,57 @@ public class Habit {
         this.streakCount = streakCount;
     }
 
-    // methods
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getTargetUnit() {
+        return targetUnit;
+    }
+
+    public void setTargetUnit(String targetUnit) {
+        this.targetUnit = targetUnit;
+    }
+
+    public Integer getTargetAmount() {
+        return targetAmount;
+    }
+
+    public void setTargetAmount(Integer targetAmount) {
+        this.targetAmount = targetAmount;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(String frequency) {
+        this.frequency = frequency;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getIcon() { return icon; }
+    public void setIcon(String icon) { this.icon = icon; }
+
     // Tagesreset
     public void resetForNewDay() {
         this.completed = false;

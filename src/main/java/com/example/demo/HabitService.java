@@ -3,6 +3,7 @@ package com.example.demo;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 // Frontend → Controller → Service → Repository → Datenbank
@@ -12,9 +13,11 @@ import java.util.List;
 public class HabitService {
 
     private final HabitRepository repo;
+    private final HabitCompletionRepository completionRepo;
 
-    public HabitService(HabitRepository repo) {
+    public HabitService(HabitRepository repo, HabitCompletionRepository completionRepo) {
         this.repo = repo;
+        this.completionRepo = completionRepo;
     }
 
     public Iterable<Habit> getAll() {
@@ -54,6 +57,15 @@ public class HabitService {
         existing.setName(updated.getName());
         existing.setCompleted(updated.isCompleted());
 
+        // NEU: alle zusätzlichen Felder übernehmen
+        existing.setCategory(updated.getCategory());
+        existing.setTargetAmount(updated.getTargetAmount());
+        existing.setTargetUnit(updated.getTargetUnit());
+        existing.setFrequency(updated.getFrequency());
+        existing.setNotes(updated.getNotes());
+        existing.setColor(updated.getColor());
+        existing.setIcon(updated.getIcon());
+
         return repo.save(existing);
     }
 
@@ -84,23 +96,58 @@ public class HabitService {
         repo.saveAll(habits);
     }
 
-    public Habit completeHabit(Long id, boolean completed) {
-        Habit habit = repo.findById(id).orElseThrow();
-        LocalDate today = LocalDate.now();
+    public Habit completeHabit(Long id, boolean completed, String dateStr) {
+        Habit habit = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
 
-        if (completed) {
-            // Cron hat gestern gecheckt → immer +1!
+        LocalDate completionDate = parseDateOrToday(dateStr);
+
+        HabitCompletion completion = completionRepo
+                .findByHabitIdAndDate(id, completionDate)
+                .orElseGet(() -> {
+                    HabitCompletion c = new HabitCompletion();
+                    c.setHabit(habit);
+                    c.setDate(completionDate);
+                    return c;
+                });
+
+        boolean wasCompleted = completion.isCompleted();
+        completion.setCompleted(completed);
+        completionRepo.save(completion);
+
+        // Streak nur erhöhen, wenn von false -> true
+        if (!wasCompleted && completed) {
             habit.setStreakCount(habit.getStreakCount() + 1);
-            habit.setLastCompletedDate(today);
+            habit.setLastCompletedDate(completionDate);
             habit.setCompleted(true);
-        } else {
-            // Offen → Reset (sofort!)
-            habit.setStreakCount(0);
-            habit.setLastCompletedDate(null);
+        }
+
+        // optional: bei false ggf. Streak anpassen, je nach Business-Logik
+        if (!completed) {
             habit.setCompleted(false);
+            // habit.setStreakCount(0); // falls du beim Undo alles resetten willst
+            // habit.setLastCompletedDate(null);
         }
 
         return repo.save(habit);
+    }
+
+
+    // 🔥 Parsing in Service (sauber!)
+    private LocalDate parseDateOrToday(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return LocalDate.now();
+        }
+        return LocalDate.parse(dateStr);
+    }
+
+
+    // 🔥 HEATMAP: 90 Tage Completions laden
+    public List<HabitCompletion> getCompletions(Long habitId, int daysBack) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(daysBack - 1L);
+
+        return completionRepo.findByHabitIdAndDateBetween(habitId, startDate, endDate);
     }
 
 
