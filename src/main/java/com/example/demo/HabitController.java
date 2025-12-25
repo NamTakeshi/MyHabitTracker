@@ -34,42 +34,54 @@ Damit dein Frontend sie anzeigen kann.
         this.service = service;
     }
 
-
-
+    //New appUser
     @GetMapping
-    public Iterable<Habit> getHabits() {
-        return service.getAll(); // <- jetzt aus DB
+    public Iterable<Habit> getHabits(@RequestParam Long userId) {
+        return service.getAll(userId);
     }
 
     // 🔥 HEATMAP ENDPOINT
     @GetMapping("/{id}/completions")
     public List<HabitCompletion> getCompletions(
             @PathVariable Long id,
+            @RequestParam Long userId,
             @RequestParam(defaultValue = "90") int daysBack) {
-        return service.getCompletions(id, daysBack);
+
+        return service.getCompletions(id, userId, daysBack);
     }
 
+
+    //new App User
     @PostMapping // Nimmt Daten vom Frontend an
-    public Habit createHabit(@RequestBody Habit h) {
-        return service.addHabit(h);
+    public Habit createHabit(@RequestBody Habit h, @RequestParam Long userId) {
+        return service.addHabit(h, userId);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteHabit(@PathVariable Long id) {
-        service.deleteHabit(id);
+    public void deleteHabit(@PathVariable Long id, @RequestParam Long userId) {
+        service.deleteHabit(id, userId);
     }
 
     // Habit bearbeiten
     @PutMapping("/{id}")
-    public Habit updateHabit(@PathVariable Long id, @RequestBody Habit h) {
-        return service.updateHabit(id, h);
+    public Habit updateHabit(
+            @PathVariable Long id,
+            @RequestBody Habit h,
+            @RequestParam Long userId) {
+
+        return service.updateHabit(id, h, userId);
     }
+
 
     // Als erledigt markieren
     @PostMapping("/{id}/check")
-    public Habit checkHabit(@PathVariable Long id) {
-        return service.checkHabit(id);
+    public Habit checkHabit(
+            @PathVariable Long id,
+            @RequestParam Long userId) {
+
+        return service.checkHabit(id, userId);
     }
+
 
     // Tägliches Reset
     @PostMapping("/reset-today")
@@ -77,21 +89,24 @@ Damit dein Frontend sie anzeigen kann.
         service.resetAllHabitsForNewDay();
     }
 
-
+    //new App User
     // Habits filtern
     @GetMapping("/filter")
-    public Iterable<Habit> filterHabits(@RequestParam String status) {
-        return service.filterByStatus(status); // z.B. "all", "active", "completed"
+    public Iterable<Habit> filterHabits(@RequestParam Long userId, @RequestParam String status) {
+        return service.filterByStatus(userId, status);
     }
 
     @PutMapping("/{id}/complete")
     public ResponseEntity<Habit> completeHabit(
             @PathVariable Long id,
             @RequestParam boolean completed,
-            @RequestParam(required = false) String date) {
-        Habit habit = service.completeHabit(id, completed, date);
+            @RequestParam(required = false) String date,
+            @RequestParam Long userId) {
+
+        Habit habit = service.completeHabit(id, completed, date, userId);
         return ResponseEntity.ok(habit);
     }
+
 
 
 

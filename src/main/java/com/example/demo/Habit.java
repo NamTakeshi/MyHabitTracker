@@ -32,6 +32,12 @@ public class Habit {
     private String color;
     private String icon;
 
+    //new ApUser
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "app_user_id", nullable = false) // "app_user_id" ist eindeutiger
+    private AppUser user;
+
+
     // constructor
     public Habit() {}
     public Habit(Long id, String name) {
@@ -134,6 +140,10 @@ public class Habit {
 
     public String getIcon() { return icon; }
     public void setIcon(String icon) { this.icon = icon; }
+
+    //New App User
+    public AppUser getUser() { return user; }
+    public void setUser(AppUser user) { this.user = user; }
 
     // Tagesreset
     public void resetForNewDay() {

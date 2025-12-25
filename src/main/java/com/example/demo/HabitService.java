@@ -3,7 +3,6 @@ package com.example.demo;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 // Frontend → Controller → Service → Repository → Datenbank
@@ -14,25 +13,35 @@ public class HabitService {
 
     private final HabitRepository repo;
     private final HabitCompletionRepository completionRepo;
+    private final AppUserRepository userRepo; //neu AppUser
 
-    public HabitService(HabitRepository repo, HabitCompletionRepository completionRepo) {
+    public HabitService(HabitRepository repo, HabitCompletionRepository completionRepo, AppUserRepository userRepo) {
         this.repo = repo;
         this.completionRepo = completionRepo;
+        this.userRepo = userRepo; //neu
     }
 
-    public Iterable<Habit> getAll() {
-        return repo.findAll();
+    //new AppUser
+    public Iterable<Habit> getAll(Long userId) {
+        return repo.findByUserId(userId);
     }
 
-    public Habit addHabit(Habit h) {
+    //new AppUser
+    public Habit addHabit(Habit h, Long userId) {
+        AppUser user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        h.setUser(user);
+        h.setCompleted(false);
+        h.setStreakCount(0);
         return repo.save(h);
     }
 
-    public void deleteHabit(Long id) {
+
+    public void deleteHabit(Long id, Long userId) {
         repo.deleteById(id);
     }
 
-    public Habit updateHabit(Long id, Habit updated) {
+    public Habit updateHabit(Long id, Habit updated, Long userId) {
         Habit existing = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
 
@@ -69,7 +78,7 @@ public class HabitService {
         return repo.save(existing);
     }
 
-    public Habit checkHabit(Long id) {
+    public Habit checkHabit(Long id, Long userId) {
         Habit habit = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
 
@@ -79,15 +88,17 @@ public class HabitService {
         return repo.save(habit);
     }
 
+    //new AppUser
     // Optional: simple Filter-Logik (nur nach completed)
-    public Iterable<Habit> filterByStatus(String status) {
+    public Iterable<Habit> filterByStatus(Long userId, String status) {
         if ("completed".equalsIgnoreCase(status)) {
-            return repo.findByCompletedTrue();
+            return repo.findByUserIdAndCompletedTrue(userId);
         } else if ("active".equalsIgnoreCase(status)) {
-            return repo.findByCompletedFalse();
+            return repo.findByUserIdAndCompletedFalse(userId);
         }
-        return repo.findAll();
+        return repo.findByUserId(userId);
     }
+
 
     // Manuelles Resetting (Wird von Cron Job eigentlich automatisch übernommen)
     public void resetAllHabitsForNewDay() {
@@ -96,7 +107,7 @@ public class HabitService {
         repo.saveAll(habits);
     }
 
-    public Habit completeHabit(Long id, boolean completed, String dateStr) {
+    public Habit completeHabit(Long id, boolean completed, String dateStr, Long userId) {
         Habit habit = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
 
@@ -143,7 +154,7 @@ public class HabitService {
 
 
     // 🔥 HEATMAP: 90 Tage Completions laden
-    public List<HabitCompletion> getCompletions(Long habitId, int daysBack) {
+    public List<HabitCompletion> getCompletions(Long habitId, Long userId, int daysBack) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(daysBack - 1L);
 
