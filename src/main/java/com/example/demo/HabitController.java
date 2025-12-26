@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /*
@@ -96,14 +97,24 @@ Damit dein Frontend sie anzeigen kann.
     @GetMapping("/filter")
     public Iterable<Habit> filterHabits(@RequestParam Long userId, @RequestParam String status) {return service.filterByStatus(userId, status);}
 
-    /**
-     * Spezifisches Erledigen eines Habits für ein bestimmtes Datum.
-     * @param completed true = erledigt, false = offen.
-     * @param date Das Datum als String (optional, sonst heute).
-     * @return Das aktualisierte Habit-Objekt als Antwort.
-     */
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Habit> completeHabit( @PathVariable Long id, @RequestParam boolean completed, @RequestParam(required = false) String date, @RequestParam Long userId) {
+    public ResponseEntity<?> completeHabit(
+            @PathVariable Long id,
+            @RequestParam boolean completed,
+            @RequestParam(required = false) String date,
+            @RequestParam Long userId
+    ) {
+        // Datum umwandeln oder heutiges Datum nehmen
+        LocalDate anfrageDatum = (date == null || date.isEmpty())
+                ? LocalDate.now()
+                : LocalDate.parse(date);
+
+        // SICHERHEIT: Nur das heutige Datum ist für Änderungen erlaubt
+        if (!anfrageDatum.equals(LocalDate.now())) {
+            return ResponseEntity.badRequest()
+                    .body("Fehler: Du kannst Gewohnheiten nur für den aktuellen Tag als erledigt markieren.");
+        }
+
         Habit habit = service.completeHabit(id, completed, date, userId);
         return ResponseEntity.ok(habit);
     }

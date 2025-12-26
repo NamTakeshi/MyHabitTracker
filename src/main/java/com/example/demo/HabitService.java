@@ -136,44 +136,48 @@ public class HabitService {
         repo.saveAll(habits);
     }
 
-    /**
-     * Speichert eine spezifische Erledigung (Completion) für ein Datum.
-     * @param id Habit-ID.
-     * @param completed Status (erledigt oder nicht).
-     * @param dateStr Das Datum als String (z.B. "2023-12-24").
-     */
+
     public Habit completeHabit(Long id, boolean completed, String dateStr, Long userId) {
         Habit habit = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Habit not found: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Habit nicht gefunden: " + id));
 
-        LocalDate completionDate = parseDateOrToday(dateStr);
+        LocalDate abschlussDatum = parseDateOrToday(dateStr);
+        LocalDate heute = LocalDate.now();
+        LocalDate gestern = heute.minusDays(1);
 
+        // Den Status für den spezifischen Tag in der HabitCompletion-Tabelle speichern
         HabitCompletion completion = completionRepo
-                .findByHabitIdAndDate(id, completionDate)
+                .findByHabitIdAndDate(id, abschlussDatum)
                 .orElseGet(() -> {
                     HabitCompletion c = new HabitCompletion();
                     c.setHabit(habit);
-                    c.setDate(completionDate);
+                    c.setDate(abschlussDatum);
                     return c;
                 });
 
-        boolean wasCompleted = completion.isCompleted();
+        boolean warBereitsErledigt = completion.isCompleted();
         completion.setCompleted(completed);
         completionRepo.save(completion);
 
-        // Streak nur erhöhen, wenn von false -> true
-        if (!wasCompleted && completed) {
-            habit.setStreakCount(habit.getStreakCount() + 1);
-            habit.setLastCompletedDate(completionDate);
+        // Logik für den Streak-Zähler
+        if (!warBereitsErledigt && completed) {
+            // STREAK-BERECHNUNG:
+            if (habit.getLastCompletedDate() != null && habit.getLastCompletedDate().equals(gestern)) {
+                // Wenn gestern erledigt wurde -> Streak um 1 erhöhen
+                habit.setStreakCount(habit.getStreakCount() + 1);
+            } else {
+                // Wenn gestern nichts gemacht wurde oder es das erste Mal ist -> Streak startet bei 1
+                habit.setStreakCount(1);
+            }
+            habit.setLastCompletedDate(abschlussDatum);
             habit.setCompleted(true);
         }
-
-        // optional: bei false ggf. Streak anpassen, je nach Business-Logik
-        if (!completed) {
+        else if (warBereitsErledigt && !completed) {
+            // Wenn der Haken entfernt wird (Undo) -> Streak um 1 verringern
+            habit.setStreakCount(Math.max(0, habit.getStreakCount() - 1));
             habit.setCompleted(false);
-            // habit.setStreakCount(0); // falls du beim Undo alles resetten willst
-            // habit.setLastCompletedDate(null);
         }
+
         return repo.save(habit);
     }
 
