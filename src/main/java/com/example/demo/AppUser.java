@@ -1,7 +1,7 @@
 package com.example.demo;
 
 import jakarta.persistence.*;
-//new all
+
 @Entity
 @Table(name = "users")
 public class AppUser {
@@ -10,24 +10,35 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // statt email → username
     @Column(unique = true, nullable = false)
-    private String email;   // oder username, wie du willst
+    private String username;
+
+    // öffentliche 5-stellige User-ID als String
+    @Column(unique = true, nullable = false, length = 5)
+    private String userCode;
 
     @Column(nullable = false)
     private String passwordHash;
 
     public AppUser() {}
 
-    public AppUser(String email, String passwordHash) {
-        this.email = email;
+    // Konstruktor
+    public AppUser(String username, String userCode, String passwordHash) {
+        this.username = username;
+        this.userCode = userCode;
         this.passwordHash = passwordHash;
     }
 
-    public Long getId() { return id; }
+    // Getter und Setter
+    public Long getId() {return id;}
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUsername() {return username;}
+    public void setUsername(String username) {this.username = username;}
 
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getUserCode() {return userCode;}
+    public void setUserCode(String userCode) {this.userCode = userCode;}
+
+    public String getPasswordHash() {return passwordHash;}
+    public void setPasswordHash(String passwordHash) {this.passwordHash = passwordHash;}
 }

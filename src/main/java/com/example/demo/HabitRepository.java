@@ -7,11 +7,10 @@ import org.springframework.stereotype.Repository;
 // Repository für Kommunikation mit DB
 @Repository
 public interface HabitRepository extends CrudRepository<Habit, Long> {
-
     Iterable<Habit> findByUserId(Long userId);
-
     Iterable<Habit> findByUserIdAndCompletedTrue(Long userId);
-
     Iterable<Habit> findByUserIdAndCompletedFalse(Long userId);
 
+    // für Account-Löschung
+    void deleteByUserId(Long userId);
 }

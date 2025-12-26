@@ -32,13 +32,13 @@ public class Habit {
     private String color;
     private String icon;
 
-    //new ApUser
+    //AppUser
     @ManyToOne(optional = false)
     @JoinColumn(name = "app_user_id", nullable = false) // "app_user_id" ist eindeutiger
     private AppUser user;
 
 
-    // constructor
+    // Konstruktor
     public Habit() {}
     public Habit(Long id, String name) {
         this.id = id;
@@ -48,95 +48,39 @@ public class Habit {
         this.lastCompletedDate = null;
     }
 
-    // getter
-    public Long getId() {
-        return id;
-    }
+    //Getter und Setter
+    public LocalDate getLastCompletedDate() {return lastCompletedDate;}
+    public void setLastCompletedDate(LocalDate lastCompletedDate) {this.lastCompletedDate = lastCompletedDate;}
 
-    public String getName() {
-        return name;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
 
-    public boolean isCompleted() {
-        return completed;
-    }
+    public String getName() {return name;}
+    public void setName(String name) {this.name = name;}
 
-    public int getStreakCount() {
-        return streakCount;
-    }
+    public boolean isCompleted() {return completed;}
+    public void setCompleted(boolean completed) {this.completed = completed;}
 
-    public LocalDate getLastCompletedDate() {
-        return lastCompletedDate;
-    }
+    public int getStreakCount() {return streakCount;}
+    public void setStreakCount(int streakCount) {this.streakCount = streakCount;}
 
-    // setter
-    public void setLastCompletedDate(LocalDate lastCompletedDate) {
-        this.lastCompletedDate = lastCompletedDate;
-    }
+    public String getCategory() {return category;}
+    public void setCategory(String category) {this.category = category;}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getTargetUnit() {return targetUnit;}
+    public void setTargetUnit(String targetUnit) {this.targetUnit = targetUnit;}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Integer getTargetAmount() {return targetAmount;}
+    public void setTargetAmount(Integer targetAmount) {this.targetAmount = targetAmount;}
 
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
-    }
+    public String getFrequency() {return frequency;}
+    public void setFrequency(String frequency) {this.frequency = frequency;}
 
-    public void setStreakCount(int streakCount) {
-        this.streakCount = streakCount;
-    }
+    public String getNotes() {return notes;}
+    public void setNotes(String notes) {this.notes = notes;}
 
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getTargetUnit() {
-        return targetUnit;
-    }
-
-    public void setTargetUnit(String targetUnit) {
-        this.targetUnit = targetUnit;
-    }
-
-    public Integer getTargetAmount() {
-        return targetAmount;
-    }
-
-    public void setTargetAmount(Integer targetAmount) {
-        this.targetAmount = targetAmount;
-    }
-
-    public String getFrequency() {
-        return frequency;
-    }
-
-    public void setFrequency(String frequency) {
-        this.frequency = frequency;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
+    public String getColor() {return color;}
+    public void setColor(String color) {this.color = color;}
 
     public String getIcon() { return icon; }
     public void setIcon(String icon) { this.icon = icon; }

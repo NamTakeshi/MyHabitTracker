@@ -30,91 +30,45 @@ Damit dein Frontend sie anzeigen kann.
 
     private final HabitService service;
 
-    public HabitController(HabitService service) {
-        this.service = service;
-    }
+    public HabitController(HabitService service) { this.service = service;}
 
     //New appUser
     @GetMapping
-    public Iterable<Habit> getHabits(@RequestParam Long userId) {
-        return service.getAll(userId);
-    }
+    public Iterable<Habit> getHabits(@RequestParam Long userId) {return service.getAll(userId);}
 
     // 🔥 HEATMAP ENDPOINT
     @GetMapping("/{id}/completions")
-    public List<HabitCompletion> getCompletions(
-            @PathVariable Long id,
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "90") int daysBack) {
-
+    public List<HabitCompletion> getCompletions( @PathVariable Long id, @RequestParam Long userId, @RequestParam(defaultValue = "90") int daysBack) {
         return service.getCompletions(id, userId, daysBack);
     }
 
-
     //new App User
     @PostMapping // Nimmt Daten vom Frontend an
-    public Habit createHabit(@RequestBody Habit h, @RequestParam Long userId) {
-        return service.addHabit(h, userId);
-    }
+    public Habit createHabit(@RequestBody Habit h, @RequestParam Long userId) {return service.addHabit(h, userId);}
 
     @DeleteMapping("/{id}")
-    public void deleteHabit(@PathVariable Long id, @RequestParam Long userId) {
-        service.deleteHabit(id, userId);
-    }
+    public void deleteHabit(@PathVariable Long id, @RequestParam Long userId) {service.deleteHabit(id, userId);}
 
     // Habit bearbeiten
     @PutMapping("/{id}")
-    public Habit updateHabit(
-            @PathVariable Long id,
-            @RequestBody Habit h,
-            @RequestParam Long userId) {
-
-        return service.updateHabit(id, h, userId);
-    }
-
+    public Habit updateHabit( @PathVariable Long id, @RequestBody Habit h, @RequestParam Long userId) {return service.updateHabit(id, h, userId);}
 
     // Als erledigt markieren
     @PostMapping("/{id}/check")
-    public Habit checkHabit(
-            @PathVariable Long id,
-            @RequestParam Long userId) {
-
-        return service.checkHabit(id, userId);
-    }
-
+    public Habit checkHabit( @PathVariable Long id, @RequestParam Long userId) {return service.checkHabit(id, userId);}
 
     // Tägliches Reset
     @PostMapping("/reset-today")
-    public void resetToday() {
-        service.resetAllHabitsForNewDay();
-    }
+    public void resetToday() { service.resetAllHabitsForNewDay();}
 
     //new App User
     // Habits filtern
     @GetMapping("/filter")
-    public Iterable<Habit> filterHabits(@RequestParam Long userId, @RequestParam String status) {
-        return service.filterByStatus(userId, status);
-    }
+    public Iterable<Habit> filterHabits(@RequestParam Long userId, @RequestParam String status) {return service.filterByStatus(userId, status);}
 
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Habit> completeHabit(
-            @PathVariable Long id,
-            @RequestParam boolean completed,
-            @RequestParam(required = false) String date,
-            @RequestParam Long userId) {
-
+    public ResponseEntity<Habit> completeHabit( @PathVariable Long id, @RequestParam boolean completed, @RequestParam(required = false) String date, @RequestParam Long userId) {
         Habit habit = service.completeHabit(id, completed, date, userId);
         return ResponseEntity.ok(habit);
     }
-
-
-
-
-
-
-
-
-
-
 }
-

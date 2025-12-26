@@ -12,13 +12,11 @@ public class HabitCompletion {
 
     @ManyToOne(optional = false)
     private Habit habit;
-
     private LocalDate date;
-
     private boolean completed;
-
     public HabitCompletion() {}
 
+    // Konstruktor
     public HabitCompletion(Habit habit, LocalDate date, boolean completed) {
         this.habit = habit;
         this.date = date;

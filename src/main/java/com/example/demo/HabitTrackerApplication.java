@@ -15,7 +15,7 @@ public class HabitTrackerApplication {
 		SpringApplication.run(HabitTrackerApplication.class, args);
 	}
 
-    //new AppUser
+    //AppUser
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

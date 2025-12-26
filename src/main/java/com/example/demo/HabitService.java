@@ -36,7 +36,6 @@ public class HabitService {
         return repo.save(h);
     }
 
-
     public void deleteHabit(Long id, Long userId) {
         repo.deleteById(id);
     }
@@ -99,7 +98,6 @@ public class HabitService {
         return repo.findByUserId(userId);
     }
 
-
     // Manuelles Resetting (Wird von Cron Job eigentlich automatisch übernommen)
     public void resetAllHabitsForNewDay() {
         Iterable<Habit> habits = repo.findAll();
@@ -143,7 +141,6 @@ public class HabitService {
         return repo.save(habit);
     }
 
-
     // 🔥 Parsing in Service (sauber!)
     private LocalDate parseDateOrToday(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) {
@@ -152,7 +149,6 @@ public class HabitService {
         return LocalDate.parse(dateStr);
     }
 
-
     // 🔥 HEATMAP: 90 Tage Completions laden
     public List<HabitCompletion> getCompletions(Long habitId, Long userId, int daysBack) {
         LocalDate endDate = LocalDate.now();
@@ -160,9 +156,4 @@ public class HabitService {
 
         return completionRepo.findByHabitIdAndDateBetween(habitId, startDate, endDate);
     }
-
-
-
-
 }
-
