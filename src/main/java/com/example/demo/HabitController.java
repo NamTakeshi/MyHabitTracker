@@ -21,6 +21,11 @@ POST /habits → speichert neuen Habit mit repo.save()
 3. Gibt Antworten im JSON-Format zurück
 Damit dein Frontend sie anzeigen kann.
 */
+
+/**
+ * Der Controller ist die Schnittstelle nach außen.
+ * Er empfängt HTTP-Anfragen vom Frontend und leitet sie an den HabitService weiter.
+ */
 @RequestMapping("/habits")
 @RestController
 @CrossOrigin(origins = {
@@ -32,40 +37,71 @@ Damit dein Frontend sie anzeigen kann.
 
     public HabitController(HabitService service) { this.service = service;}
 
-    //New appUser
+    /**
+     * Holt alle Gewohnheiten für einen bestimmten User.
+     * @param userId Die ID des angemeldeten Benutzers (kommt aus der URL: ?userId=...)
+     */
     @GetMapping
     public Iterable<Habit> getHabits(@RequestParam Long userId) {return service.getAll(userId);}
 
-    // 🔥 HEATMAP ENDPOINT
+    /**
+     * Liefert die Daten für die Heatmap (Kalender-Übersicht).
+     * @param id Die ID des spezifischen Habits (aus dem Pfad /{id}).
+     * @param userId Wer fragt an?
+     * @param daysBack Wie viele Tage rückwärts (Standard: 90).
+     */
     @GetMapping("/{id}/completions")
     public List<HabitCompletion> getCompletions( @PathVariable Long id, @RequestParam Long userId, @RequestParam(defaultValue = "90") int daysBack) {
         return service.getCompletions(id, userId, daysBack);
     }
 
-    //new App User
+    /**
+     * Erstellt ein neues Habit.
+     * @param h Das Habit-Objekt (kommt als JSON im RequestBody).
+     * @param userId Die ID des Users, dem das Habit gehören soll.
+     */
     @PostMapping // Nimmt Daten vom Frontend an
     public Habit createHabit(@RequestBody Habit h, @RequestParam Long userId) {return service.addHabit(h, userId);}
 
+    /**
+     * Löscht ein Habit anhand seiner ID.
+     */
     @DeleteMapping("/{id}")
     public void deleteHabit(@PathVariable Long id, @RequestParam Long userId) {service.deleteHabit(id, userId);}
 
-    // Habit bearbeiten
+    /**
+     * Aktualisiert ein bestehendes Habit (z.B. Name, Farbe oder Status geändert).
+     * @param id Welches Habit soll geändert werden?
+     * @param h Die neuen Daten.
+     */
     @PutMapping("/{id}")
     public Habit updateHabit( @PathVariable Long id, @RequestBody Habit h, @RequestParam Long userId) {return service.updateHabit(id, h, userId);}
 
-    // Als erledigt markieren
+    /**
+     * Schnelles Markieren als "erledigt" für den heutigen Tag.
+     */
     @PostMapping("/{id}/check")
     public Habit checkHabit( @PathVariable Long id, @RequestParam Long userId) {return service.checkHabit(id, userId);}
 
-    // Tägliches Reset
+    /**
+     * Setzt alle Habits manuell auf "nicht erledigt" zurück.
+     */
     @PostMapping("/reset-today")
     public void resetToday() { service.resetAllHabitsForNewDay();}
 
-    //new App User
-    // Habits filtern
+    /**
+     * Filtert die Habits (z.B. nur die aktiven oder nur die erledigten).
+     * @param status Der Filter-Status ("active", "completed").
+     */
     @GetMapping("/filter")
     public Iterable<Habit> filterHabits(@RequestParam Long userId, @RequestParam String status) {return service.filterByStatus(userId, status);}
 
+    /**
+     * Spezifisches Erledigen eines Habits für ein bestimmtes Datum.
+     * @param completed true = erledigt, false = offen.
+     * @param date Das Datum als String (optional, sonst heute).
+     * @return Das aktualisierte Habit-Objekt als Antwort.
+     */
     @PutMapping("/{id}/complete")
     public ResponseEntity<Habit> completeHabit( @PathVariable Long id, @RequestParam boolean completed, @RequestParam(required = false) String date, @RequestParam Long userId) {
         Habit habit = service.completeHabit(id, completed, date, userId);

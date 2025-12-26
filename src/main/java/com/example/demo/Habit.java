@@ -7,10 +7,17 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Die Haupt-Entity für ein Habit.
+ * Hier werden alle Einstellungen und der aktuelle Fortschritt gespeichert.
+ */
 @Entity
 @Table(name = "habits")
 public class Habit {
 
+    // Verknüpfung zu den einzelnen Erledigungen (Historie)
+    // cascade = ALL: Wenn ein Habit gelöscht wird, werden auch alle Erledigungen gelöscht.
+    // orphanRemoval = true: Verwaiste Einträge werden automatisch entfernt.
     @OneToMany(mappedBy = "habit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HabitCompletion> completions = new ArrayList<>();
 
@@ -32,7 +39,10 @@ public class Habit {
     private String color;
     private String icon;
 
-    //AppUser
+    /**
+     * Verknüpfung zum Besitzer der Gewohnheit.
+     * @ManyToOne: Viele Habits gehören zu einem User.
+     */
     @ManyToOne(optional = false)
     @JoinColumn(name = "app_user_id", nullable = false) // "app_user_id" ist eindeutiger
     private AppUser user;

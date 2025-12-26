@@ -2,6 +2,10 @@ package com.example.demo;
 
 import jakarta.persistence.*;
 
+/**
+ * Die AppUser-Klasse repräsentiert einen Benutzer im System.
+ * Sie speichert die Anmeldedaten und den eindeutigen User-Code.
+ */
 @Entity
 @Table(name = "users")
 public class AppUser {
@@ -23,7 +27,12 @@ public class AppUser {
 
     public AppUser() {}
 
-    // Konstruktor
+    /**
+     * Konstruktor zum Erstellen eines neuen Benutzers.
+     * @param username Der gewählte Name.
+     * @param userCode Der generierte 5-stellige Sicherheitscode.
+     * @param passwordHash Das bereits verschlüsselte Passwort.
+     */
     public AppUser(String username, String userCode, String passwordHash) {
         this.username = username;
         this.userCode = userCode;
