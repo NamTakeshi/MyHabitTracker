@@ -11,6 +11,10 @@ import java.util.List;
         "https://myhabittracker-frontend.onrender.com",
         "http://localhost:5173"
 })
+
+/**
+ * Controller Klasse API für Account Registrieren, Log-in, Löschen
+ */
 public class AuthController {
 
     private final UserService userService;

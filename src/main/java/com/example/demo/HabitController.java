@@ -42,7 +42,8 @@ Damit dein Frontend sie anzeigen kann.
      * Holt alle Gewohnheiten für einen bestimmten User.
      * @param userId Die ID des angemeldeten Benutzers (kommt aus der URL: ?userId=...)
      */
-    @GetMapping
+    // ? trennt Pfad von Query-Parametern
+    @GetMapping // GET /habits?userId=1 → "Zeig mir NUR Habits von User #1
     public Iterable<Habit> getHabits(@RequestParam Long userId) {return service.getAll(userId);}
 
     /**

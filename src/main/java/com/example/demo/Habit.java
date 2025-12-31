@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Die Haupt-Entity für ein Habit.
- * Hier werden alle Einstellungen und der aktuelle Fortschritt gespeichert.
+ * Hier werden Kerninformationen einer Gewohnheit und der aktuelle Fortschritt gespeichert.
  */
 @Entity
 @Table(name = "habits")
