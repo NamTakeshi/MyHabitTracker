@@ -5,9 +5,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-// Frontend → Controller → Service → Repository → Datenbank
-// Der Service ist das Gehirn zwischen Controller und Repository.
-
 /**
  * Service-Klasse für die Habit-Logik.
  * Hier wird gesteuert, wie Gewohnheiten erstellt, aktualisiert und mit Streaks verrechnet werden.

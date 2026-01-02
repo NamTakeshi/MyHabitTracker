@@ -1,27 +1,10 @@
 package com.example.demo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-
-/*
-Controller:
-
-1. Liefert Daten an das Frontend
-GET /habits → gibt alle Habits zurück
-
-2. Nimmt Daten vom Frontend an
-POST /habits → speichert neuen Habit mit repo.save()
-
-3. Gibt Antworten im JSON-Format zurück
-Damit dein Frontend sie anzeigen kann.
-*/
 
 /**
  * Der Controller ist die Schnittstelle nach außen.
