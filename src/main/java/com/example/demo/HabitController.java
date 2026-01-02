@@ -7,9 +7,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Der Controller ist die Schnittstelle nach außen.
- * Er empfängt HTTP-Anfragen vom Frontend und leitet sie an den HabitService weiter.
+ * REST-API-Endpunkte für Habit CRUD, Toggle und Heatmap-Daten.
+ * Alle Endpunkte benötigen userId-Parameter (Multi-User-Sicherheit).
+ *
+ * <p>Hauptendpunkte:
+ * <ul>
+ * <li>GET /habits?userId=1 → Liste aller Habits</li>
+ * <li>PUT /habits/5/complete?completed=true → Toggle erledigt</li>
+ * <li>GET /habits/5/completions?daysBack=90 → Heatmap-Daten</li>
+ * </ul></p>
  */
+
 @RequestMapping("/habits")
 @RestController
 @CrossOrigin(origins = {

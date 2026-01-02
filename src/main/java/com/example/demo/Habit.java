@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Die Haupt-Entity für ein Habit.
- * Hier werden Kerninformationen einer Gewohnheit und der aktuelle Fortschritt gespeichert.
+ * Kern-Entity für Gewohnheiten.
+ * Speichert Name, täglichen Status, Streak-Zähler, Einstellungen (Kategorie, Ziel, Farbe)
+ * und Verknüpfungen zu AppUser und täglichen Erledigungen (HabitCompletion).
+ *
+ * <p>Streak-Logik: Erhöht sich nur bei aufeinanderfolgenden Tagen. resetForNewDay()
+ * setzt nur 'completed' zurück, behält Streak.</p>
  */
+
 @Entity
 @Table(name = "habits")
 public class Habit {

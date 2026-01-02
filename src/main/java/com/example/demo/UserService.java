@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Service-Klasse zur Verwaltung von Benutzern.
- * Enthält die Logik für Registrierung, Login, Passwort-Reset und Löschen.
+ * Benutzerverwaltung: Register, Login, Reset, Delete.
+ * Verwaltet BCrypt-Hashing und eindeutige 5-stellige UserCodes.
+ *
+ * <p>deleteUser() löscht Habits zuerst (Foreign Key). register() prüft Username-Kollisionen.</p>
  */
+
 @Service
 public class UserService {
 

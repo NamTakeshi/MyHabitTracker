@@ -6,11 +6,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 /**
- * Führt täglich um 00:00 automatisch {@link HabitService#resetAllHabitsForNewDay()}
- * aus. Setzt alle Habits auf {@code completed = false}, behält Streaks bei.
+ * Cron-Job: Läuft täglich um 00:00 Uhr.
+ * Setzt alle Habits auf 'completed=false', behält aber gültige Streaks (gestern erledigt).
  *
- * @author Nam Phan
+ * <p>Verhindert, dass Habits "ewig erledigt" bleiben. Streak-Reset nur bei Auslassung.</p>
  */
+
 @Component
 public class DailyHabitResetJob {
 

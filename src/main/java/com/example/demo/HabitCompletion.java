@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**
- * Diese Entity speichert den Status einer Gewohnheit für ein ganz bestimmtes Datum.
- * Sie ermöglicht es, eine Historie anzuzeigen.
+ * Tägliche Erledigungs-Historie eines Habits (für Heatmap und präzise Streaks).
+ * Speichert pro Habit + Datum ob erledigt oder nicht.
+ *
+ * <p>Unique: Ein Habit hat pro Tag maximal einen Eintrag. Wird für 90-Tage-Heatmaps
+ * und Streak-Berechnung verwendet.</p>
  */
+
 @Entity
 public class HabitCompletion {
 

@@ -13,8 +13,13 @@ import java.util.List;
 })
 
 /**
- * Controller Klasse API für Account Registrieren, Log-in, Löschen
+ * Authentifizierungs-API für Register, Login, Passwort-Reset und Konto-Löschung.
+ * Gibt bei Erfolg userId + userCode zurück (für localStorage).
+ *
+ * <p>Passwort-Reset erfordert Username + 5-stelligen UserCode (2FA-ähnlich).
+ * Delete löscht User + alle zugehörigen Habits (cascade).</p>
  */
+
 public class AuthController {
 
     private final UserService userService;

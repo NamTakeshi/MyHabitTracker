@@ -3,9 +3,13 @@ package com.example.demo;
 import jakarta.persistence.*;
 
 /**
- * Die AppUser-Klasse repräsentiert einen Benutzer im System.
- * Sie speichert die Anmeldedaten und den eindeutigen User-Code.
+ * Entity für App-Benutzer.
+ * Speichert Username, BCrypt-gehashtes Passwort und 5-stelligen UserCode (für Passwort-Reset).
+ * Jeder Benutzer besitzt mehrere Habits (One-to-Many).
+ *
+ * <p>Wichtig: userCode ist öffentlich (Client-seitig) aber eindeutig – dient als 2FA bei Reset.</p>
  */
+
 @Entity
 @Table(name = "users")
 public class AppUser {
