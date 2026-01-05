@@ -14,4 +14,4 @@ jobs:
           java-version: '17'
 
       - name: Backend Tests
-        run: cd backend && chmod +x gradlew && ./gradlew test --tests HabitServiceTest
+        run: chmod +x gradlew && ./gradlew test --tests HabitServiceTest
