@@ -2,16 +2,18 @@ name: habit-tests.yml
 on: [push, pull_request]
 
 jobs:
-  backend:
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v2
+      - name: Set up JDK 25
+        uses: actions/setup-java@v2
         with:
+          java-version: '25'
           distribution: 'temurin'
-          java-version: '17'
-
-      - name: Backend Tests
-        run: chmod +x gradlew && ./gradlew test --tests HabitServiceTest
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run Backend Tests
+        run: ./gradlew test
