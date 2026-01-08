@@ -1,9 +1,20 @@
 package com.example.demo;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+/**
+ * REST-Controller für Authentifizierung und Benutzerverwaltung.
+ *
+ * <p>Stellt Endpunkte für Registrierung, Login, Passwort-Reset
+ * und das Löschen von Benutzerkonten bereit.</p>
+ *
+ * <p>Der User-Code wird beim Registrieren einmalig im Klartext
+ * zurückgegeben und anschließend nur gehasht gespeichert.</p>
+ */
 
 @RestController
 @RequestMapping("/auth")
@@ -12,34 +23,47 @@ import java.util.List;
         "http://localhost:5173"
 })
 
-/**
- * Authentifizierungs-API für Register, Login, Passwort-Reset und Konto-Löschung.
- * Gibt bei Erfolg userId + userCode zurück (für localStorage).
- *
- * <p>Passwort-Reset erfordert Username + 5-stelligen UserCode (2FA-ähnlich).
- * Delete löscht User + alle zugehörigen Habits (cascade).</p>
- */
-
 public class AuthController {
 
     private final UserService userService;
+
 
     public AuthController(UserService userService) {
         this.userService = userService;
     }
 
-    // DTOs
+    /**
+     * Request-Daten für Registrierung und Login.
+     */
     public static class AuthRequest {
         public String username;
         public String password;
     }
 
-    public static class AuthResponse {
+    /**
+     * Response-Daten für einen erfolgreichen Login.
+     */
+    public static class LoginResponse {
         public Long userId;
         public String username;
-        public String userCode;
 
-        public AuthResponse(Long userId, String username, String userCode) {
+        public LoginResponse(Long userId, String username) {
+            this.userId = userId;
+            this.username = username;
+        }
+    }
+
+    /**
+     * Response-Daten für eine erfolgreiche Registrierung.
+     *
+     * <p>Der User-Code wird nur einmal im Klartext zurückgegeben.</p>
+     */
+    public static class RegisterResponse {
+        public Long userId;
+        public String username;
+        public String userCode; // plaintext, ONCE
+
+        public RegisterResponse(Long userId, String username, String userCode) {
             this.userId = userId;
             this.username = username;
             this.userCode = userCode;
@@ -54,33 +78,38 @@ public class AuthController {
     }
 
     /**
-     * Erstellt ein neues Benutzerkonto.
-     * @param request Enthält Username und Passwort vom Frontend.
-     * @return Die Daten des neuen Users (ID, Name, Code).
+     * Registriert einen neuen Benutzer.
+     *
+     * @param request Username und Passwort
+     * @return User-ID, Username und einmaliger User-Code
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
-        AppUser user = userService.register(request.username, request.password);
-        return ResponseEntity.ok(new AuthResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getUserCode()
-        ));
+    public ResponseEntity<RegisterResponse> register(@RequestBody AuthRequest request) {
+        UserService.RegisterResult result =
+                userService.register(request.username, request.password);
+
+        return ResponseEntity.ok(
+                new RegisterResponse(result.user.getId(), result.user.getUsername(), result.userCodePlain
+                )
+        );
     }
 
     /**
-     * Prüft die Anmeldedaten eines Benutzers.
-     * @param request Benutzername und Passwort.
-     * @return Bei Erfolg: Die User-Daten für das Frontend (zum Speichern im LocalStorage).
+     * Authentifiziert einen Benutzer.
+     *
+     * @param request Username und Passwort
+     * @return Basisdaten des eingeloggten Benutzers
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request) {
         AppUser user = userService.login(request.username, request.password);
-        return ResponseEntity.ok(new AuthResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getUserCode()
-        ));
+
+        return ResponseEntity.ok(
+                new LoginResponse(
+                        user.getId(),
+                        user.getUsername()
+                )
+        );
     }
 
     /**
@@ -104,9 +133,11 @@ public class AuthController {
     }
 
     /**
-     * Zeigt alle registrierten Benutzer an.
-     * @return Eine Liste aller User-Objekte.
+     * Gibt alle Benutzer zurück.
+     *
+     * <p>Nur im Entwicklungsprofil verfügbar.</p>
      */
+    @Profile("dev")
     @GetMapping("/users")
     public List<AppUser> getAllUsers() {return userService.getAllUsers();}
 }

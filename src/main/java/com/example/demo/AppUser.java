@@ -4,43 +4,55 @@ import jakarta.persistence.*;
 
 /**
  * Entity für App-Benutzer.
- * Speichert Username, BCrypt-gehashtes Passwort und 5-stelligen UserCode (für Passwort-Reset).
- * Jeder Benutzer besitzt mehrere Habits (One-to-Many).
  *
- * <p>Wichtig: userCode ist öffentlich (Client-seitig) aber eindeutig – dient als 2FA bei Reset.</p>
+ * <p>Speichert Anmeldeinformationen und sicherheitsrelevante Daten.
+ *  * Sensible Werte wie Passwort und User-Code werden ausschließlich
+ *  * in gehashter Form persistiert.</p>
  */
 
 @Entity
 @Table(name = "users")
 public class AppUser {
 
+    /**
+     * Technischer Primärschlüssel.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // statt email → username
+    /**
+     * Eindeutiger Benutzername.
+     */
     @Column(unique = true, nullable = false)
     private String username;
 
-    // öffentliche 5-stellige User-ID als String
-    @Column(unique = true, nullable = false, length = 5)
+    /**
+     * Gehashter Sicherheitscode für Passwort-Resets.
+     *
+     * <p>Der Klartext-Code wird niemals gespeichert oder zurückgegeben.</p>
+     */
+    @Column(name = "user_code", nullable = false, unique = true, length = 100)
     private String userCode;
 
+    /**
+     * Gehashter Passwortwert.
+     */
     @Column(nullable = false)
-    private String passwordHash;
+    private String password;
 
     public AppUser() {}
 
     /**
      * Konstruktor zum Erstellen eines neuen Benutzers.
      * @param username Der gewählte Name.
-     * @param userCode Der generierte 5-stellige Sicherheitscode.
-     * @param passwordHash Das bereits verschlüsselte Passwort.
+     * @param userCode Der einmalig generierte Sicherheitscode (gehasht gespeichert).
+     * @param password Das bereits verschlüsselte Passwort.
      */
-    public AppUser(String username, String userCode, String passwordHash) {
+    public AppUser(String username, String userCode, String password) {
         this.username = username;
         this.userCode = userCode;
-        this.passwordHash = passwordHash;
+        this.password = password;
     }
 
     // Getter und Setter
@@ -53,6 +65,6 @@ public class AppUser {
     public String getUserCode() {return userCode;}
     public void setUserCode(String userCode) {this.userCode = userCode;}
 
-    public String getPasswordHash() {return passwordHash;}
-    public void setPasswordHash(String passwordHash) {this.passwordHash = passwordHash;}
+    public String getPassword() {return password;}
+    public void setPassword(String password) {this.password = password;}
 }

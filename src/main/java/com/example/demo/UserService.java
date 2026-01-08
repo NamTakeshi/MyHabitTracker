@@ -4,13 +4,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
+
 
 /**
- * Benutzerverwaltung: Register, Login, Reset, Delete.
- * Verwaltet BCrypt-Hashing und eindeutige 5-stellige UserCodes.
+ * Service für Benutzerverwaltung.
  *
- * <p>deleteUser() löscht Habits zuerst (Foreign Key). register() prüft Username-Kollisionen.</p>
+ * <p>Enthält die Geschäftslogik für Registrierung, Login,
+ * Passwort-Reset und das Löschen von Benutzerkonten.</p>
+ *
+ * <p>Sensible Werte (Passwort, User-Code) werden ausschließlich
+ * in gehashter Form gespeichert.</p>
  */
 
 @Service
@@ -20,6 +24,10 @@ public class UserService {
     private final HabitRepository habitRepo;
     private final PasswordEncoder passwordEncoder;
 
+    private static final String CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+    private static final int USER_CODE_LENGTH = 12;
+    private final SecureRandom secureRandom = new SecureRandom();
+
     // Konstruktor: Initialisiert die Repositories und den Password-Encoder
     public UserService(AppUserRepository userRepo, HabitRepository habitRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
@@ -28,19 +36,41 @@ public class UserService {
     }
 
     /**
-     * Registriert einen neuen Benutzer.
-     * @param username Der gewünschte Name des Nutzers.
-     * @param rawPassword Das Passwort im Klartext (wird vor Speicherung verschlüsselt).
+     * Technisches Rückgabeobjekt für die Registrierung.
+     *
+     * <p>Enthält den gespeicherten Benutzer sowie den einmalig
+     * ausgegebenen Klartext-User-Code.</p>
      */
-    public AppUser register(String username, String rawPassword) {
+    public static class RegisterResult {
+        public final AppUser user;
+        public final String userCodePlain;
+
+        public RegisterResult(AppUser user, String userCodePlain) {
+            this.user = user;
+            this.userCodePlain = userCodePlain;
+        }
+    }
+
+    /**
+     * Registriert einen neuen Benutzer.
+     *
+     * @param username gewünschter Benutzername
+     * @param rawPassword Passwort im Klartext
+     * @return Benutzer + einmaliger User-Code
+     */
+    public RegisterResult register(String username, String rawPassword) {
         userRepo.findByUsername(username).ifPresent(u -> {
             throw new IllegalArgumentException("Benutzername bereits vergeben");
         });
-        String userCode = generateUniqueUserCode();
-        String hash = passwordEncoder.encode(rawPassword);
 
-        AppUser user = new AppUser(username, userCode, hash);
-        return userRepo.save(user);
+        String userCodePlain = generateUserCodePlain();
+        String userCodeHash = passwordEncoder.encode(userCodePlain);
+        String passwordHash = passwordEncoder.encode(rawPassword);
+
+        AppUser user = new AppUser(username, userCodeHash, passwordHash);
+        AppUser saved = userRepo.save(user);
+
+        return new RegisterResult(saved, userCodePlain);
     }
 
     /**
@@ -52,28 +82,30 @@ public class UserService {
         AppUser user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User nicht gefunden"));
 
-        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new IllegalArgumentException("Falsches Passwort");
         }
         return user;
     }
 
     /**
-     * Setzt das Passwort eines Benutzers zurück.
-     * @param username Name des Kontos.
-     * @param userCode Die geheime 5-stellige ID zur Verifizierung.
-     * @param newPassword Das neue Passwort, das gesetzt werden soll.
+     * Setzt ein neues Passwort anhand des User-Codes.
+     *
+     * @param username Benutzername
+     * @param userCode Klartext-User-Code
+     * @param newPassword neues Passwort im Klartext
      */
     public void resetPassword(String username, String userCode, String newPassword) {
         AppUser user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User nicht gefunden"));
 
-        if (!user.getUserCode().equals(userCode)) {
+        // compare pakai hash
+        if (!passwordEncoder.matches(userCode, user.getUserCode())) {
             throw new IllegalArgumentException("Username und User-ID passen nicht zusammen");
         }
 
         String hash = passwordEncoder.encode(newPassword);
-        user.setPasswordHash(hash);
+        user.setPassword(hash);
         userRepo.save(user);
     }
 
@@ -89,16 +121,15 @@ public class UserService {
     }
 
     /**
-     * Interne Hilfsmethode: Generiert eine eindeutige 5-stellige Nummer (z.B. "08152").
-     * @return Ein String mit genau 5 Ziffern, z.B. "02739".
+     * Generiert einen zufälligen Klartext-User-Code.
      */
-    private String generateUniqueUserCode() {
-        String code;
-        do {
-            int num = ThreadLocalRandom.current().nextInt(0, 100000);
-            code = String.format("%05d", num);
-        } while (userRepo.findByUserCode(code).isPresent());
-        return code;
+    private String generateUserCodePlain() {
+        StringBuilder sb = new StringBuilder(USER_CODE_LENGTH);
+        for (int i = 0; i < USER_CODE_LENGTH; i++) {
+            int idx = secureRandom.nextInt(CODE_ALPHABET.length());
+            sb.append(CODE_ALPHABET.charAt(idx));
+        }
+        return sb.toString();
     }
 
     /**
