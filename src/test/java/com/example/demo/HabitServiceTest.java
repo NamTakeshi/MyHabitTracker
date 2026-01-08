@@ -173,4 +173,113 @@ class HabitServiceTest {
         Iterable<Habit> result = service.filterByStatus(1L, "active");
         assertEquals(1, ((List<?>) result).size());
     }
+
+    /**
+     * Testet, dass deleteHabit() ohne Exception ausgeführt wird.
+     *
+     * <p>Der Test stellt sicher, dass der Service-Aufruf
+     * zum Löschen eines Habits keine Fehler wirft,
+     * auch wenn keine Rückgabewerte geprüft werden.</p>
+     *
+     * <p>Die Repository-Abhängigkeit ist gemockt,
+     * sodass keine echte Datenbank benötigt wird.</p>
+     */
+    @Test
+    @DisplayName("deleteHabit should delete habit by id")
+    void testDeleteHabitCallsRepository() {
+        assertDoesNotThrow(() -> service.deleteHabit(5L, 1L));
+    }
+
+    /**
+     * Testet, ob filterByStatus("completed") ausschließlich
+     * erledigte Habits zurückgibt.
+     *
+     * <p>Gemockt wird das Repository so,
+     * dass genau ein abgeschlossenes Habit für den User existiert.</p>
+     *
+     * <p>Der Test prüft, dass die Rückgabe
+     * genau ein Element enthält.</p>
+     */
+    @Test
+    @DisplayName("filterByStatus completed returns only completed habits")
+    void testFilterByStatusCompleted() {
+        Habit completed = new Habit();
+        completed.setCompleted(true);
+
+        doReturn(List.of(completed))
+                .when(repo).findByUserIdAndCompletedTrue(1L);
+
+        Iterable<Habit> result = service.filterByStatus(1L, "completed");
+        assertEquals(1, ((List<?>) result).size());
+    }
+
+    /**
+     * Testet, ob filterByStatus("all") alle Habits
+     * eines Benutzers zurückliefert.
+     *
+     * <p>Das Repository wird gemockt,
+     * um zwei Habits für den User zurückzugeben.</p>
+     *
+     * <p>Der Test verifiziert,
+     * dass beide Habits im Ergebnis enthalten sind.</p>
+     */
+    @Test
+    @DisplayName("filterByStatus all returns all habits")
+    void testFilterByStatusAll() {
+        Habit h1 = new Habit();
+        Habit h2 = new Habit();
+
+        doReturn(List.of(h1, h2)).when(repo).findByUserId(1L);
+
+        Iterable<Habit> result = service.filterByStatus(1L, "all");
+        assertEquals(2, ((List<?>) result).size());
+    }
+
+    /**
+     * Testet, ob resetAllHabitsForNewDay() den Status
+     * "completed" aller Habits zurücksetzt.
+     *
+     * <p>Ein zuvor als erledigt markiertes Habit
+     * wird nach dem Reset als nicht erledigt erwartet.</p>
+     *
+     * <p>Der Test simuliert einen Tageswechsel,
+     * ohne dabei Streak-Werte zu verändern.</p>
+     */
+    @Test
+    @DisplayName("resetAllHabitsForNewDay resets completed flag")
+    void testResetAllHabitsForNewDay() {
+        Habit h = new Habit();
+        h.setCompleted(true);
+
+        doReturn(List.of(h)).when(repo).findAll();
+        doReturn(List.of(h)).when(repo).saveAll(any());
+
+        service.resetAllHabitsForNewDay();
+
+        assertFalse(h.isCompleted());
+    }
+
+    /**
+     * Testet, ob getCompletions() eine Liste von
+     * HabitCompletion-Einträgen korrekt zurückgibt.
+     *
+     * <p>Das Completion-Repository wird gemockt,
+     * um zwei Erledigungs-Einträge im angegebenen Zeitraum zu liefern.</p>
+     *
+     * <p>Der Test prüft,
+     * dass die erwartete Anzahl an Einträgen zurückgegeben wird.</p>
+     */
+    @Test
+    @DisplayName("getCompletions returns completion list")
+    void testGetCompletionsReturnsList() {
+        HabitCompletion c1 = new HabitCompletion();
+        HabitCompletion c2 = new HabitCompletion();
+
+        doReturn(List.of(c1, c2))
+                .when(completionRepo)
+                .findByHabitIdAndDateBetween(eq(1L), any(), any());
+
+        List<HabitCompletion> result = service.getCompletions(1L, 1L, 30);
+        assertEquals(2, result.size());
+    }
 }
