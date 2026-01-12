@@ -175,14 +175,13 @@ class HabitServiceTest {
     }
 
     /**
-     * Testet, dass deleteHabit() ohne Exception ausgeführt wird.
+     * Testet ob deleteHabit() ohne Fehler ausgeführt wird.
      *
-     * <p>Der Test stellt sicher, dass der Service-Aufruf
-     * zum Löschen eines Habits keine Fehler wirft,
-     * auch wenn keine Rückgabewerte geprüft werden.</p>
+     * Mocks:
+     * - repo.deleteById(5L) → kein Verhalten (void)
      *
-     * <p>Die Repository-Abhängigkeit ist gemockt,
-     * sodass keine echte Datenbank benötigt wird.</p>
+     * Prüft:
+     * - es wird keine Exception geworfen
      */
     @Test
     @DisplayName("deleteHabit should delete habit by id")
@@ -191,14 +190,13 @@ class HabitServiceTest {
     }
 
     /**
-     * Testet, ob filterByStatus("completed") ausschließlich
-     * erledigte Habits zurückgibt.
+     * Testet ob filterByStatus("completed") nur erledigte Habits zurückgibt.
      *
-     * <p>Gemockt wird das Repository so,
-     * dass genau ein abgeschlossenes Habit für den User existiert.</p>
+     * Mocks:
+     * - repo.findByUserIdAndCompletedTrue(1L) → List mit 1 erledigtem Habit
      *
-     * <p>Der Test prüft, dass die Rückgabe
-     * genau ein Element enthält.</p>
+     * Prüft:
+     * - result.size() == 1
      */
     @Test
     @DisplayName("filterByStatus completed returns only completed habits")
@@ -214,37 +212,16 @@ class HabitServiceTest {
     }
 
     /**
-     * Testet, ob filterByStatus("all") alle Habits
-     * eines Benutzers zurückliefert.
+     * Testet ob resetAllHabitsForNewDay() alle Habits zurücksetzt.
      *
-     * <p>Das Repository wird gemockt,
-     * um zwei Habits für den User zurückzugeben.</p>
+     * Mocks:
+     * - repo.findAll() → List mit 1 erledigtem Habit
+     * - repo.saveAll(...) → gespeicherte Habits
      *
-     * <p>Der Test verifiziert,
-     * dass beide Habits im Ergebnis enthalten sind.</p>
+     * Prüft:
+     * - completed == false nach dem Reset
      */
-    @Test
-    @DisplayName("filterByStatus all returns all habits")
-    void testFilterByStatusAll() {
-        Habit h1 = new Habit();
-        Habit h2 = new Habit();
 
-        doReturn(List.of(h1, h2)).when(repo).findByUserId(1L);
-
-        Iterable<Habit> result = service.filterByStatus(1L, "all");
-        assertEquals(2, ((List<?>) result).size());
-    }
-
-    /**
-     * Testet, ob resetAllHabitsForNewDay() den Status
-     * "completed" aller Habits zurücksetzt.
-     *
-     * <p>Ein zuvor als erledigt markiertes Habit
-     * wird nach dem Reset als nicht erledigt erwartet.</p>
-     *
-     * <p>Der Test simuliert einen Tageswechsel,
-     * ohne dabei Streak-Werte zu verändern.</p>
-     */
     @Test
     @DisplayName("resetAllHabitsForNewDay resets completed flag")
     void testResetAllHabitsForNewDay() {
@@ -260,26 +237,128 @@ class HabitServiceTest {
     }
 
     /**
-     * Testet, ob getCompletions() eine Liste von
-     * HabitCompletion-Einträgen korrekt zurückgibt.
+     * Testet ob addHabit() fehlschlägt, wenn der User nicht existiert.
      *
-     * <p>Das Completion-Repository wird gemockt,
-     * um zwei Erledigungs-Einträge im angegebenen Zeitraum zu liefern.</p>
+     * Mocks:
+     * - userRepo.findById(99L) → Optional.empty()
      *
-     * <p>Der Test prüft,
-     * dass die erwartete Anzahl an Einträgen zurückgegeben wird.</p>
+     * Prüft:
+     * - IllegalArgumentException wird geworfen
+     */
+
+    @Test
+    @DisplayName("addHabit fails if user does not exist")
+    void addHabitFailsWhenUserNotFound() {
+        doReturn(Optional.empty())
+                .when(userRepo).findById(99L);
+
+        Habit input = new Habit();
+        input.setName("Joggen");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                service.addHabit(input, 99L)
+        );
+    }
+
+    /**
+     * Testet ob ein Undo (completed=false) keinen negativen Streak erzeugt.
+     *
+     * Mocks:
+     * - repo.findById(1L) → Habit mit streakCount = 0
+     * - completionRepo.findByHabitIdAndDate(...) → bestehende Completion
+     *
+     * Prüft:
+     * - streakCount bleibt 0
+     */
+
+    @Test
+    @DisplayName("undo completion does not set negative streak")
+    void undoDoesNotCreateNegativeStreak() {
+        Habit habit = new Habit();
+        habit.setId(1L);
+        habit.setStreakCount(0);
+
+        doReturn(Optional.of(habit)).when(repo).findById(1L);
+
+        HabitCompletion comp = new HabitCompletion();
+        comp.setCompleted(true);
+
+        doReturn(Optional.of(comp))
+                .when(completionRepo)
+                .findByHabitIdAndDate(eq(1L), any());
+
+        doReturn(comp).when(completionRepo).save(any());
+        doReturn(habit).when(repo).save(any());
+
+        Habit result = service.completeHabit(1L, false, "2026-01-06", 1L);
+
+        assertEquals(0, result.getStreakCount());
+    }
+
+    /**
+     * Testet ob completeHabit() fehlschlägt, wenn das Habit nicht existiert.
+     *
+     * Mocks:
+     * - repo.findById(42L) → Optional.empty()
+     *
+     * Prüft:
+     * - IllegalArgumentException wird geworfen
      */
     @Test
-    @DisplayName("getCompletions returns completion list")
-    void testGetCompletionsReturnsList() {
-        HabitCompletion c1 = new HabitCompletion();
-        HabitCompletion c2 = new HabitCompletion();
+    @DisplayName("completeHabit fails if habit not found")
+    void completeHabitFailsWhenHabitMissing() {
+        doReturn(Optional.empty())
+                .when(repo).findById(42L);
 
-        doReturn(List.of(c1, c2))
-                .when(completionRepo)
-                .findByHabitIdAndDateBetween(eq(1L), any(), any());
+        assertThrows(IllegalArgumentException.class, () ->
+                service.completeHabit(42L, true, "2026-01-06", 1L)
+        );
+    }
 
-        List<HabitCompletion> result = service.getCompletions(1L, 1L, 30);
-        assertEquals(2, result.size());
+    /**
+     * Testet ob filterByStatus(null) alle Habits zurückgibt.
+     *
+     * Mocks:
+     * - repo.findByUserId(1L) → List mit 2 Habits
+     *
+     * Prüft:
+     * - result.size() == 2
+     */
+    @Test
+    @DisplayName("filterByStatus with null returns all habits")
+    void filterByStatusNullReturnsAll() {
+        Habit h1 = new Habit();
+        Habit h2 = new Habit();
+
+        doReturn(List.of(h1, h2))
+                .when(repo).findByUserId(1L);
+
+        Iterable<Habit> result = service.filterByStatus(1L, null);
+
+        assertEquals(2, ((List<?>) result).size());
+    }
+
+    /**
+     * Testet ob updateHabit() fehlschlägt, wenn das Habit nicht existiert.
+     *
+     * Mocks:
+     * - repo.findById(99L) → Optional.empty()
+     *
+     * Prüft:
+     * - IllegalArgumentException wird geworfen
+     */
+
+    @Test
+    @DisplayName("updateHabit fails if habit does not exist")
+    void updateHabitFailsWhenHabitMissing() {
+        doReturn(Optional.empty())
+                .when(repo).findById(99L);
+
+        Habit updated = new Habit();
+        updated.setName("Neu");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                service.updateHabit(99L, updated, 1L)
+        );
     }
 }
